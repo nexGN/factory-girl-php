@@ -20,9 +20,9 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "doctrine/orm": "2.4.*",
-        "doctrine/dbal": "dev-master#aa6be84b2804ce0d7f56a5d52693f983656d5eb8",
-        "doctrine/common": "2.4.*"
+        "doctrine/orm": "dev-master",
+        "doctrine/dbal": "dev-master",
+        "doctrine/common": "dev-master"
     },
     "autoload": {
         "psr-0": {
