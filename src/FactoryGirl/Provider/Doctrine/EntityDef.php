@@ -11,18 +11,18 @@ use Doctrine\ORM\EntityManager,
 class EntityDef
 {
     private $name;
-    
+
     private $entityType;
-    
+
     /**
      * @var ClassMetadata
      */
     private $metadata;
-    
+
     private $fieldDefs;
-    
+
     private $config;
-    
+
     public function __construct(EntityManager $em, $name, $type, array $fieldDefs, array $config)
     {
         $this->name = $name;
@@ -30,23 +30,25 @@ class EntityDef
         $this->metadata = $em->getClassMetadata($type);
         $this->fieldDefs = array();
         $this->config = $config;
-        
+
         $this->readFieldDefs($fieldDefs);
         $this->defaultDefsFromMetadata();
     }
-    
+
     private function readFieldDefs(array $params)
     {
         foreach ($params as $key => $def) {
-            if ($this->metadata->hasField($key) ||
-                    $this->metadata->hasAssociation($key)) {
+            if ($this->metadata->hasField($key)
+                || $this->metadata->hasAssociation($key)
+                || isset($this->metadata->embeddedClasses[$key])
+            ) {
                 $this->fieldDefs[$key] = $this->normalizeFieldDef($def);
             } else {
                 throw new Exception('No such field in ' . $this->entityType . ': ' . $key);
             }
         }
     }
-    
+
     private function defaultDefsFromMetadata() {
         $allFields = array_merge($this->metadata->getFieldNames(), $this->metadata->getAssociationNames());
         foreach ($allFields as $fieldName) {
@@ -55,7 +57,7 @@ class EntityDef
             }
         }
     }
-    
+
     /**
      * Returns the name of the entity definition.
      * @return string
@@ -64,7 +66,7 @@ class EntityDef
     {
         return $this->name;
     }
-    
+
     /**
      * Returns the fully qualified name of the entity class.
      * @return string
@@ -73,7 +75,7 @@ class EntityDef
     {
         return $this->entityType;
     }
-    
+
     /**
      * Returns the fielde definition callbacks.
      */
@@ -81,7 +83,7 @@ class EntityDef
     {
         return $this->fieldDefs;
     }
-    
+
     /**
      * Returns the Doctrine metadata for the entity to be created.
      * @return ClassMetadata
@@ -90,7 +92,7 @@ class EntityDef
     {
         return $this->metadata;
     }
-    
+
     /**
      * Returns the extra configuration array of the entity definition.
      * @return array
@@ -99,7 +101,7 @@ class EntityDef
     {
         return $this->config;
     }
-    
+
     private function normalizeFieldDef($def)
     {
         if (is_callable($def)) {
@@ -108,7 +110,7 @@ class EntityDef
             return function() use ($def) { return $def; };
         }
     }
-    
+
     private function ensureInvokable($f)
     {
         if (method_exists($f, '__invoke')) {
